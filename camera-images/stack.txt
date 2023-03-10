@@ -1,0 +1,30 @@
+			<Stack.Navigator>
+				<Stack.Screen
+					component={Home}
+					name={'home'}
+					options={{
+						headerShown: false
+					}}
+				/>
+				<Stack.Screen
+					component={Explore}
+					name={'explore'}
+					options={{
+						headerShown: false
+					}}
+				/>
+				<Stack.Screen
+					component={Upload}
+					name={'upload'}
+					options={{
+						headerShown: false
+					}}
+				/>
+				<Stack.Screen
+					component={Capture}
+					name={'capture'}
+					options={{
+						headerShown: false
+					}}
+				/>
+			</Stack.Navigator>
