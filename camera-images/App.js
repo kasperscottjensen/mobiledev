@@ -1,15 +1,9 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-
-import firebase from './config.js';
-
-import Home from './screens/Home.js';
-import Explore from './screens/Explore.js';
-import Upload from './screens/Upload.js';
+import { StackHome, StackExplore, StackUpload} from './components/StackNavigator.js';
 
 
 export default function App() {
@@ -20,8 +14,8 @@ export default function App() {
 
 		<NavigationContainer>
 			<Tab.Navigator
-				initialRouteName='Home'
-				screenOptions={{
+				initialRouteName='home'
+				screenOptions={() => ({
 					headerShown: false,
 					tabBarStyle: {
 						backgroundColor: '#00bfff',
@@ -40,12 +34,12 @@ export default function App() {
 					tabBarIconStyle: {
 						padding: 0
 					}
-				}}
+				})}
 			>
 
 				<Tab.Screen
 					name={'home'}
-					component={Home}
+					component={StackHome}
 					options={{
 						tabBarLabel: 'Home',
 						tabBarIcon: ({focused}) => (
@@ -55,7 +49,7 @@ export default function App() {
 				/>
 				<Tab.Screen
 					name={'explore'}
-					component={Explore}
+					component={StackExplore}
 					options={{
 						tabBarLabel: 'Explore',
 						tabBarIcon: ({focused}) => (
@@ -65,7 +59,7 @@ export default function App() {
 				/>
 				<Tab.Screen
 					name={'upload'}
-					component={Upload}
+					component={StackUpload}
 					options={{
 						tabBarLabel: 'Upload',
 						tabBarIcon: ({focused}) => (

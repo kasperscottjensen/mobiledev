@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Alert } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -9,7 +9,7 @@ import firebase from './../config.js';
 
 const Upload = () => {
 
-	const [image, setImage] = useState(null);
+	const [image, setImage] = useState();
 	
 	const selectImageHandler = async () => {
 		let result = await ImagePicker.launchImageLibraryAsync({
@@ -27,7 +27,17 @@ const Upload = () => {
 		setImage({uri: result.uri});
 	};
 
-	const uploadImageHandler = () => {
+	const deleteImage = () => {
+		if (!image) {
+			return Alert.alert(
+				'Woops!',
+				'Please select or capture an image first.'
+			);
+		}
+		setImage(null);
+	};
+
+	const uploadImageHandler = async () => {
 		if (!image) {
 			return Alert.alert(
 				'Woops!',
@@ -35,13 +45,22 @@ const Upload = () => {
 			);
 		}
 		const filepath = image.uri;
+		const response = await fetch(filepath);
+		const blob = await response.blob();
 		const filename = filepath.substring(filepath.lastIndexOf('/') + 1);
-		const storageRef = firebase.storage().ref().child(filename);
-		try {
-			storageRef.put(filepath);
-		} catch (error) {
-			console.log(error);
-		}
+		const storageRef = firebase.storage()
+			.ref()
+			.child(filename);
+		storageRef.put(blob)
+			.then(async (snapshot) => {
+				const imageUrl = await snapshot.ref.getDownloadURL();
+				firebase.firestore()
+					.collection('imageurls')
+					.add({url: imageUrl, filename: filename});
+			})
+			.catch((error) => {
+				console.log(error);
+			});
 		Alert.alert(
 			'Yeehaw!',
 			'Your image has been successfully uploaded to Firebase Storage.'
@@ -52,7 +71,7 @@ const Upload = () => {
 	return (
 
 		<View style={styles.container}>
-			<StatusBar style="auto"/>
+			<StatusBar style='auto'/>
 			<Image source={require('./../assets/uploadHeader.png')} style={styles.headerImage}/>
 			<View style={styles.bodyWrapper}>
 				<TouchableOpacity style={styles.button} onPress={selectImageHandler}>
@@ -67,6 +86,10 @@ const Upload = () => {
 					<Ionicons name={'arrow-up-circle'} color={'#ffffff'} size={30}/>
 					<Text style={styles.buttonText}>Upload</Text>
 				</TouchableOpacity>
+				<TouchableOpacity style={styles.button} onPress={deleteImage}>
+					<Ionicons name={'close-circle'} color={'#ffffff'} size={30}/>
+					<Text style={styles.buttonText}>Cancel</Text>
+				</TouchableOpacity>
 			</View>
 			<View style={styles.contentWrapper}>
 				{image && <Image source={{uri: image.uri}} style={styles.image}/>}
@@ -75,7 +98,7 @@ const Upload = () => {
 
 	);
 
-}
+};
 
 
 const styles = StyleSheet.create({
@@ -93,10 +116,10 @@ const styles = StyleSheet.create({
 	bodyWrapper: {
 		flex: 1,
 		flexDirection: 'row',
-		justifyContent: 'center'
+		justifyContent: 'center',
 	},
 	button: {
-		marginHorizontal: 30,
+		marginHorizontal: 20,
 		alignItems: 'center'
 	},
 	buttonText: {
@@ -105,8 +128,9 @@ const styles = StyleSheet.create({
 		fontSize: 15
 	},
 	contentWrapper: {
-		flex: 1,
-		justifyContent: 'center'
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginBottom: 100
 	},
 	image: {
 		resizeMode: 'contain',
